@@ -1,130 +1,77 @@
-# Google Form AutoFiller
+# Google Forms QA & Automated Testing Web Tool
 
-Google Form AutoFiller is a Node.js tool that automates the process of filling and submitting Google Forms. It extracts form metadata, generates predefined responses, and submits them.
+Công cụ kiểm thử tự động cho Google Forms với giao diện trực quan (Web UI), cho phép mô phỏng và chạy test đáp án dành cho các Google Form thuộc quyền sở hữu/kiểm soát của bạn.
 
-## Features
-- Extract form data (question structure) from Google Forms using their URL.
-- Automatically fill form fields with pre-defined answers from a config file.
-- Automatically parses `forms.gle` short links.
-- Supports multiple question types:
-  - Short answers
-  - Long answers
-  - Multiple-choice
-  - Star Rating
-  - Checkboxes
-  - Dropdowns
-  - Linear Scale
-  - Date
-  - Time  
-  *(Note: Other question types or answer validations may cause the form to fail.)*
+---
 
-## Installation
+## 🚀 Tính Năng Nổi Bật
+
+1. **Tự động nhận diện loại câu hỏi (Auto Parse Google Form)**:
+   - Tự phân tích URL Google Form & trích xuất danh sách câu hỏi, entry ID, loại câu hỏi, và các option có sẵn.
+   - Hỗ trợ đầy đủ các loại câu hỏi: *Short Answer, Paragraph, Multiple Choice, Checkbox, Dropdown, Linear Scale, Rating, Date, Time*.
+
+2. **Cấu hình dữ liệu độc lập cho từng câu hỏi**:
+   - **Nhập dữ liệu**:
+     - *Thủ công (Manual)*: Nhập chuỗi cố định.
+     - *Import File (.txt, .csv, .json, .xlsx)*: Hỗ trợ chế độ chọn **Random** hoặc **Sequential (Nối tiếp)**.
+       - Tùy chọn xử lý overflow khi số response > số dòng file: *Loop từ đầu* hoặc *Stop khi hết dữ liệu*.
+     - *Sinh dữ liệu tự động (Generated)*.
+   - **Multiple Choice / Dropdown / Scale / Rating**:
+     - *Fixed*: Chọn 1 đáp án cố định.
+     - *Random*: Chọn ngẫu nhiên giữa các option.
+     - *Weighted Random*: Đặt tỷ lệ % hoặc số lượng mục tiêu cho từng đáp án.
+     - *Exact Count*: Đảm bảo đúng chính xác số lượng đáp án mong muốn trên tổng số test run (ví dụ: 60 "Đồng ý", 30 "Không đồng ý", 10 "Hoàn toàn đồng ý" trên 100 test responses) và tự động xáo trộn thứ tự (Shuffle).
+   - **Checkbox**:
+     - Hỗ trợ nhiều lựa chọn cùng lúc (Min selected, Max selected) hoặc cấu hình tỷ lệ %.
+
+3. **Lưu trữ Dataset / Profile**:
+   - Lưu cấu hình theo tên Profile vào LocalStorage.
+   - Xuất (Export) & Nhập (Import) cấu hình dạng file **JSON**.
+
+4. **Bản xem trước (Preview Data)**:
+   - Hiển thị bảng mô phỏng dữ liệu test (Table Preview) cho N responses trước khi Start Test.
+
+5. **Test Runner & Thống Kê**:
+   - Đặt số lượng response test & thời gian delay giữa các lượt.
+   - Thanh tiến trình trực tiếp (%), hiển thị số Completed / Success / Failed.
+   - Khung Output Log thời gian thực với timestamp.
+   - Tự động dừng/backoff khi gặp lỗi HTTP 429 hoặc rate-limit.
+   - Thống kê chi tiết biểu đồ tỷ lệ chọn đáp án và danh sách dữ liệu sequential đã dùng.
+
+---
+
+## 🛠️ Hướng Dẫn Cài Đặt & Chạy Tool
+
+### 1. Cài Đặt Package
+
+Chạy lệnh sau tại thư mục dự án:
 
 ```bash
-git clone https://github.com/BlaizerBrumo/Google-Form-AutoFiller.git
-cd Google-Form-AutoFiller
-npm i
+npm install
 ```
 
-Requires Node.js v18 or higher.
+### 2. Khởi Chạy Web Tool (Development Mode)
 
-## How It Works
+```bash
+npm run dev
+```
 
-The script automates the process of filling and submitting Google Forms using a combination of data extraction, request body generation, and HTTP requests. Here's a step-by-step explanation:
+Lệnh này sẽ tự động khởi chạy cả **Express API Backend (port 3001)** và **Vite Web UI (port 3000)**.
 
-### 1. Extract Form Data
-When you provide a Google Form URL, the script:
-- Fetches the HTML content using the `node-fetch`.
-- Parses the form's structure with `jsdom` to extract:
-  - **`FB_PUBLIC_LOAD_DATA`**:
-    - A JavaScript object embedded in the HTML that contains metadata such as:
-      - Question IDs and types (e.g., short answer, multiple-choice).
-      - Options for predefined answers (e.g., multiple-choice, dropdowns).
-  - **`fbzx` (Shuffle Seed)**:
-    - A unique session identifier required for form submission.
+Sau khi khởi chạy thành công, mở trình duyệt và truy cập:
 
-### 2. Generate Request Body
-Using the extracted metadata, the script:
-- Identifies each question's type and fills in appropriate responses from the configuration.
-- Adds form-specific metadata such as `fbzx`, `fvv`, and `partialResponse`.
-
-### 3. Submit Form
-The script sends the generated request body to the Google Form's submission endpoint (`/formResponse`) using an HTTP POST request.
+👉 **[http://localhost:3000](http://localhost:3000)**
 
 ---
 
-## Configuration
+## 📖 Quy Trình Sử Dụng
 
-The script's behavior can be customized through the `config.js` file:
-
-### Debugging Mode
-```js
-"debug": {
-    "sendDebugLogs": true, // Enable or disable debug logs
-}
-```
-
-### Answer Configuration
-Customize responses for each question type:
-```js
-"answers": {
-    "sendSameRequestBody": false, // Reuse the same generated request body for each submission
-    "emailAnswer": "form@example.com", // Answer for email question
-    "urlAnswer": "https://example.com", // Answer for URL question
-    0: "Example short answer", // Answer for question at index 0
-    1: "Example long answer"   // Answer for question at index 1
-}
-```
-
----
-
-
-## Variable Documentation
-
-### Question Type IDs
-
-| ID  | Type                          | Description                                                  |
-|-----|-------------------------------|--------------------------------------------------------------|
-| `0` | Short Answer                  | Single-line text input.                                      |
-| `1` | Long Answer (Paragraph)       | Multi-line text input.                                       |
-| `2` | Multiple Choice               | Select one option from a list of choices.                    |
-| `3` | Dropdown                      | Select one option from a dropdown menu.                      |
-| `4` | Checkboxes                    | Select one or more options from a list.                      |
-| `5` | Linear Scale                  | Select a value from a numerical scale (e.g., 1 to 5).        |
-| `8` | Section Divider               | Non-input section break; typically used for multi-page forms.|
-| `9` | Date                          | Date picker input. May include time if enabled.              |
-| `10`| Time                          | Time picker input.                                           |
-| `18`| Star Rating                   | Select a number of stars as a rating (e.g., 1 to 5 stars).   |
-
-
-### Submission Metadata
-
-| Variable        | Description                                                                 |
-|----------------|-----------------------------------------------------------------------------|
-| `fbzx`         | A unique identifier (shuffle seed) required for submitting the form. Extracted from the form’s HTML. |
-| `fvv`          | Form version value. Usually set to `1`. Used internally by Google Forms to track form state/version. |
-| `pageHistory`  | Tracks the navigation flow between form sections. Usually an array like `[0]`. |
-| `entry.<id>`   | Key used in the request body to send an answer for a specific question. `<id>` corresponds to the internal question ID. |
-
-_These values are used when building a valid request body for submitting to `/formResponse`._
-
-
-## License
-
-This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) license.
-
-You may:
-- Use, modify, and share this project for non-commercial purposes
-- Fork and adapt it, as long as proper credit is given
-
-You may not:
-- Use this project or any part of it for commercial purposes without permission
-
-For full terms, see: https://creativecommons.org/licenses/by-nc/4.0/
-
----
-
-## Author
-
-Developed by Blazer
-GitHub: https://github.com/BlaizerBrumo
+1. **Mở Web Tool** tại `http://localhost:3000`.
+2. **Dán Google Form URL** vào ô tìm kiếm và bấm **[ LOAD FORM ]**.
+3. **Cấu hình từng câu hỏi**:
+   - Chọn nguồn dữ liệu (Manual, File import `.txt/.csv/.json/.xlsx`, hoặc Generated).
+   - Chọn chế độ chọn đáp án (*Fixed, Random, Weighted, Exact Count*).
+4. **Bấm [ Preview Data ]** để kiểm tra bảng dữ liệu mô phỏng.
+5. **Cấu hình Test Runner**: nhập số lượng test responses (ví dụ `100`) và thời gian delay (`2` giây).
+6. **Bấm [ START TEST ]** và theo dõi tiến trình chạy trực tiếp.
+7. Xem báo cáo thống kê tỷ lệ chọn sau khi hoàn thành.
