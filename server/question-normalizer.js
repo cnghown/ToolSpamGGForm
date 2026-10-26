@@ -32,8 +32,36 @@ function normalizeFormData(fbPublicLoadData) {
     const qDesc = q[2] || "";
     const qTypeNum = q[3];
 
-    // Section Headers (type 8) or Media (type 11) don't have entry IDs
-    if ([6, 8, 11].includes(qTypeNum)) {
+    // Section headers and media items don't have entry IDs.
+    if ([6, 8].includes(qTypeNum)) {
+      continue;
+    }
+
+    // Google Forms grids store one entry per row, with the shared column choices on each entry.
+    if ([7, 11].includes(qTypeNum)) {
+      const gridType = qTypeNum === 7 ? "multiple_choice" : "checkbox";
+
+      for (let rowIdx = 0; rowIdx < (q[4] || []).length; rowIdx++) {
+        const row = q[4][rowIdx];
+        if (!row || !row[0]) continue;
+
+        const rowLabel = Array.isArray(row[3]) ? row[3].filter(Boolean).join(" - ") : row[3];
+        const rowOptions = Array.isArray(row[1]) ? row[1].map(opt => opt && opt[0]).filter(Boolean) : [];
+
+        questions.push({
+          id: `q_${qId}_${idx}_${rowIdx}`,
+          rawId: qId,
+          entryId: String(row[0]),
+          title: rowLabel ? `${qTitle} — ${rowLabel}` : `${qTitle} — ${rowIdx + 1}`,
+          description: qDesc,
+          typeNum: qTypeNum,
+          type: gridType,
+          required: row[2] === 1,
+          options: rowOptions,
+          scaleInfo: null,
+          hasTime: false
+        });
+      }
       continue;
     }
 
