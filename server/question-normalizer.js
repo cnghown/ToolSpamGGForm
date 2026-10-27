@@ -24,6 +24,8 @@ function normalizeFormData(fbPublicLoadData) {
   
   const rawQuestions = formMeta[1] || [];
   const questions = [];
+  // shortcut: assumes linear sections; derive branch-specific history when conditional routing is supported.
+  const pageHistory = [0];
 
   for (let idx = 0; idx < rawQuestions.length; idx++) {
     const q = rawQuestions[idx];
@@ -32,8 +34,14 @@ function normalizeFormData(fbPublicLoadData) {
     const qDesc = q[2] || "";
     const qTypeNum = q[3];
 
-    // Section headers and media items don't have entry IDs.
-    if ([6, 8].includes(qTypeNum)) {
+    // Each section marker starts another page in Google Forms.
+    if (qTypeNum === 8) {
+      pageHistory.push(pageHistory.length);
+      continue;
+    }
+
+    // Media items don't have entry IDs.
+    if (qTypeNum === 6) {
       continue;
     }
 
@@ -172,6 +180,7 @@ function normalizeFormData(fbPublicLoadData) {
     title,
     description,
     fillOutWithEmail,
+    pageHistory: pageHistory.join(","),
     totalQuestions: questions.length,
     questions
   };
