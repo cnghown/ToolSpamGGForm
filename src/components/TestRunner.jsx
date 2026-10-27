@@ -34,6 +34,7 @@ export function TestRunner({ formMeta, formUrl, fbzx, questions, configs, onComp
         body: JSON.stringify({
           formUrl,
           fbzx,
+          pageHistory: formMeta?.pageHistory || "0",
           questions,
           configs,
           totalResponses: parseInt(totalResponses) || 10,

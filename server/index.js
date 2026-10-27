@@ -72,7 +72,7 @@ app.get("/api/stream-test", async (req, res) => {
   res.setHeader("Connection", "keep-alive");
 
   const testParams = activeTests.get(testId);
-  const { formUrl, fbzx, questions, configs, totalResponses, delaySeconds, fillOutWithEmail } = testParams;
+  const { formUrl, fbzx, pageHistory, questions, configs, totalResponses, delaySeconds, fillOutWithEmail } = testParams;
 
   let isCancelled = false;
   testParams.cancel = () => { isCancelled = true; };
@@ -122,7 +122,7 @@ app.get("/api/stream-test", async (req, res) => {
       });
 
       try {
-        await submitSingleResponse(formUrl, fbzx, respItem, fillOutWithEmail);
+        await submitSingleResponse(formUrl, fbzx, respItem, fillOutWithEmail, pageHistory);
         successCount++;
 
         // Track stats

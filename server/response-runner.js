@@ -17,7 +17,7 @@ function getSubmitUrl(rawUrl) {
 /**
  * Submits a single response to Google Forms endpoint
  */
-async function submitSingleResponse(formUrl, fbzx, responseItem, fillOutWithEmail = false) {
+async function submitSingleResponse(formUrl, fbzx, responseItem, fillOutWithEmail = false, pageHistory = "0") {
   const submitUrl = getSubmitUrl(formUrl);
   const formBody = [];
 
@@ -58,7 +58,7 @@ async function submitSingleResponse(formUrl, fbzx, responseItem, fillOutWithEmai
   } else {
     formBody.push(`partialResponse=%5Bnull%2Cnull%2Cnull%5D`);
   }
-  formBody.push(`pageHistory=0`);
+  formBody.push(`pageHistory=${encodeURIComponent(pageHistory || "0")}`);
   formBody.push(`submissionTimestamp=${Date.now()}`);
 
   const bodyStr = formBody.join("&");
